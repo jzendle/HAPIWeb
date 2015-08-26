@@ -72,13 +72,9 @@ public class Servlet extends HttpServlet {
                 
                 // ps.setObject(1, request.getParameterValues("name2")[0]);
 
-                
-                JSONArray resp = new JSONArray("[response, [data, ]");
                 try (ResultSet rs = ps.executeQuery()) {
                     JSONArray json = ResultSetConverter.convert(rs);
-
-                    resp.put(2, json);
-                    response.getWriter().write(resp.toString());
+                    response.getWriter().write(json.toString());
                 }
 
             }
