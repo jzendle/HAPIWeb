@@ -1,0 +1,1 @@
+select * from test.test where name = #bind ( $test.name ) or street =  #bind ( $test.message )

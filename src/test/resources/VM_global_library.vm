@@ -1,0 +1,19 @@
+
+
+
+#macro(replace $test $val $option1 $option2)
+#if ( $test == $val )$option1#else$option2#end
+#end
+
+
+#macro(default $value $defaultValue)
+#if ( $value.toString() != "" )
+$value
+#else
+$defaultValue
+#end
+#end 
+
+
+#macro(bind $bindVar)
+#if( $bind.addValue($bindVar.toString()))#end ? #end
