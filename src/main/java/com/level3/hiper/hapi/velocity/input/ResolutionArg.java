@@ -22,6 +22,11 @@ public class ResolutionArg extends BaseArg {
         public ResolutionArg(String in) {
             super(in);
         }
+        
+        
+        public Integer getAsSeconds() { 
+            return 3000;
+        }
 
 }
 

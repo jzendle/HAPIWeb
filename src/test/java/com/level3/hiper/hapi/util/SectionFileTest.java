@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.level3.cayenneprototype;
+package com.level3.hiper.hapi.util;
 
 import com.level3.hiper.hapi.util.SectionFile;
 import java.io.File;

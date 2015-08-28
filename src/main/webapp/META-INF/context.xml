@@ -10,10 +10,10 @@
           validationQuery="SELECT 1"
           validationInterval="30000"
           timeBetweenEvictionRunsMillis="30000"
-          maxActive="100"
-          minIdle="10"
+          maxActive="2"
+          minIdle="1"
           maxWait="10000"
-          initialSize="10"
+          initialSize="1"
           removeAbandonedTimeout="60"
           removeAbandoned="true"
           logAbandoned="true"
@@ -21,10 +21,10 @@
           jmxEnabled="true"
           jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;
             org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"
-          username="npm_user"
-          password="npm_user_uat"
+          username="npm_locator"
+          password="l0cateme"
           driverClassName="com.vertica.jdbc.Driver"
-          url="jdbc:vertica://dbavertdlp41.twtelecom.com:5435/verticaimpsqa"
+          url="jdbc:vertica://invertidcplp301.twtelecom.com:5433/NPMP"
 />
 
 </Context>

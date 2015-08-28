@@ -6,8 +6,10 @@
 package com.level3.hiper.hapi.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 
 /**
@@ -24,12 +26,19 @@ public class JDBC {
 
         return ps;
     }
-    
-    
-    Connection getConnection(String className, String url, String user, String password) {
-        
-        return null;
-        
+
+
+    public static Connection getConnection(String className, String url, String user, String password) throws ClassNotFoundException, SQLException {
+
+        Connection connection = null;
+
+        // the mysql driver string
+        Class.forName(className);
+
+        // get the mysql database connection
+        connection = DriverManager.getConnection(url, user, password);
+
+        return connection;
     }
 
 }

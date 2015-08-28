@@ -5,13 +5,24 @@
  */
 package com.level3.hiper.hapi.web;
 
+import com.level3.hiper.hapi.util.JDBC;
 import com.level3.hiper.hapi.util.ResultSetConverter;
+import com.level3.hiper.hapi.util.SectionFile;
+import com.level3.hiper.hapi.velocity.input.ArgBinder;
+import com.level3.hiper.hapi.velocity.input.ResolutionArg;
+import com.level3.hiper.hapi.velocity.input.StringArg;
+import com.level3.hiper.hapi.velocity.input.TimestampArg;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +33,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -58,46 +72,65 @@ public class Servlet extends HttpServlet {
             throws ServletException, IOException, SQLException, JSONException {
         response.setContentType("application/json;charset=UTF-8");
 
-        // String source = "/var/www/html" + request.getRequestURI() + ".sql";
+        Properties p = new Properties();
+        String path = "/tmp";
+        p.setProperty("file.resource.loader.path", path);
+        Velocity.init(p);
 
-        // Logger.getLogger(Servlet.class.getName()).log(Level.INFO, source);
+        String source = path + request.getRequestURI() + ".conf";
+        Logger.getLogger(Servlet.class.getName()).log(Level.INFO, source);
 
-        try (Connection conn = ds.getConnection()) {
+        /*
+         ** mess with args TODO abstract this
+         */
+        VelocityContext ct = new VelocityContext();
 
-            String text = "select 1 as freddy";
-            //String text = new Scanner(new File(source)).useDelimiter("\\A").next();
-            Logger.getLogger(Servlet.class.getName()).log(Level.INFO, "file contents: " + text);
+        TimestampArg min = new TimestampArg(null);
+        TimestampArg max = new TimestampArg(null);
+        ResolutionArg res = new ResolutionArg("5m");
+        ResolutionArg interval = new ResolutionArg("5h");
 
-            try (PreparedStatement ps = conn.prepareStatement(text)) {
-                
-                // ps.setObject(1, request.getParameterValues("name2")[0]);
+        ct.put("minimum", min);
+        ct.put("maximum", max);
+        ct.put("domain", new StringArg(null));
+        ct.put("service", new StringArg("'19/HCFS/110374/TWCS'"));
+        ct.put("resolution", res);
+        ct.put("interval", interval);
 
-                try (ResultSet rs = ps.executeQuery()) {
-                    JSONArray json = ResultSetConverter.convert(rs);
-                    response.getWriter().write(json.toString());
-                }
+        ArgBinder toBind = new ArgBinder();
+        ct.put("bind", toBind);
 
-            }
+        Map map = SectionFile.parse(source);
+
+        String tmpl = StringUtils.join((((List) map.get("read")).toArray()), '\n');
+
+        StringWriter out = new StringWriter();
+
+        try {
+            Velocity.evaluate(ct, out, " LOGGER ", tmpl);
+        } catch (Exception ex) {
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        
-//        try (PrintWriter out = response.getWriter()) {
-//            /* TODO output your page here. You may use following sample code. */
-//            out.println("<!DOCTYPE html>");
-//            out.println("<html>");
-//            out.println("<head>");
-//            out.println("<title>Servlet Servlet</title>");            
-//            out.println("</head>");
-//            out.println("<body>");
-//            out.println("<h1>" + 
-//                    request.getRequestURI() + 
-//                    request.getQueryString() + 
-//                    "</h1>");
-//            out.println("</body>");
-//            out.println("</html>");
-//        }
+
+        System.out.println(out);
+
+        System.out.println("bound variables: " + ct.get("bind"));
+
+        Collection bindVals = toBind.getVals();
+
+        // assertTrue(bindVals.size() == 2);
+        Connection conn = ds.getConnection();
+        PreparedStatement ps = conn.prepareStatement(out.toString());
+
+        ps = JDBC.populate(ps, bindVals);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            JSONArray json = ResultSetConverter.convert(rs);
+            System.out.println("response: " + json);
+            response.getWriter().write(json.toString());
+        }
 
     }
-
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

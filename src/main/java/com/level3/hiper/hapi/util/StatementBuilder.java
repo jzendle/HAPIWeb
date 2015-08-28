@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.level3.hapi.db;
+package com.level3.hiper.hapi.util;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
