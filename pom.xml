@@ -13,6 +13,7 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <fred>${project.build.directory}/endorsed</fred>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
