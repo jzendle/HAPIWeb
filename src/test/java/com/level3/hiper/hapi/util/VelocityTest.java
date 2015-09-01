@@ -36,86 +36,86 @@ import org.junit.Test;
  */
 public class VelocityTest {
 
-    Connection conn;
+	Connection conn;
 
-    public class Bind {
+	public class Bind {
 
-        List<String> vals = new ArrayList();
+		List<String> vals = new ArrayList();
 
-        public void addValue(String val) {
-            System.out.println("adding " + val);
-            vals.add(val);
-        }
+		public void addValue(String val) {
+			System.out.println("adding " + val);
+			vals.add(val);
+		}
 
-        @Override
-        public String toString() {
-            return vals.toString();
-        }
+		@Override
+		public String toString() {
+			return vals.toString();
+		}
 
-    }
+	}
 
-    public class VTest {
+	public class VTest {
 
-        public String getName() {
-            return "fred";
-        }
+		public String getName() {
+			return "fred";
+		}
 
-        public String getMessage() {
-            return "Hello";
-        }
+		public String getMessage() {
+			return "Hello";
+		}
 
-        public String getMessage(String who) {
-            return "Hello " + who;
-        }
+		public String getMessage(String who) {
+			return "Hello " + who;
+		}
 
-        public List getNames() {
-            return Arrays.asList("one", "two", "three");
-        }
+		public List getNames() {
+			return Arrays.asList("one", "two", "three");
+		}
 
-        public void setName(String t) {
-        }
+		public void setName(String t) {
+		}
 
-        public void setMessage(String who) {
-        }
+		public void setMessage(String who) {
+		}
 
-        @Override
-        public String toString() {
-            return "VTest.toString()";
-        }
-    }
+		@Override
+		public String toString() {
+			return "VTest.toString()";
+		}
+	}
 
-    public VelocityTest() {
-    }
+	public VelocityTest() {
+	}
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
+	@BeforeClass
+	public static void setUpClass() {
+	}
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
+	@AfterClass
+	public static void tearDownClass() {
+	}
 
-    @Before
-    public void setUp() {
-        try {
-            Properties p = new Properties();
-            URL location = VelocityTest.class.getProtectionDomain().getCodeSource().getLocation();
-            System.out.println(location.getFile());
+	@Before
+	public void setUp() {
+		try {
+			Properties p = new Properties();
+			URL location = VelocityTest.class.getProtectionDomain().getCodeSource().getLocation();
+			System.out.println(location.getFile());
 
-            String path = "./target/test-classes";
-            p.setProperty("file.resource.loader.path", path);
-            Velocity.init(p);
+			String path = "./target/test-classes";
+			p.setProperty("file.resource.loader.path", path);
+			Velocity.init(p);
 
-            ClassLoader cl = ClassLoader.getSystemClassLoader();
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
 
-            URL[] urls = ((URLClassLoader) cl).getURLs();
+			URL[] urls = ((URLClassLoader) cl).getURLs();
 
-            for (URL url : urls) {
-                System.out.println(url.getFile());
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+			for (URL url : urls) {
+				System.out.println(url.getFile());
+			}
+		} catch (Exception ex) {
+			Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
 //        try {
 //            // The newInstance() call is a work around for some
 //            // broken Java implementations
@@ -127,86 +127,86 @@ public class VelocityTest {
 //            // handle the error
 //        }
 
-    }
+	}
 
-    @After
-    public void tearDown() {
-    }
+	@After
+	public void tearDown() {
+	}
 
-    // @Test
-    public void hello() {
-        VelocityContext ct = new VelocityContext();
+	// @Test
+	public void hello() {
+		VelocityContext ct = new VelocityContext();
 
-	    Object put = ct.put("test", new VTest());
-	    Object put1 = ct.put("bind", new Bind());
+		Object put = ct.put("test", new VTest());
+		Object put1 = ct.put("bind", new Bind());
 
-        String tmpl = "select * from test.test where name = #bind ( $test.getMessage('Test') )  and name != #bind ( $test.value )";
+		String tmpl = "select * from test.test where name = #bind ( $test.getMessage('Test') )  and name != #bind ( $test.value )";
 
-        StringWriter out = new StringWriter();
+		StringWriter out = new StringWriter();
 
-        try {
-            Velocity.evaluate(ct, out, "JZ was here", tmpl);
-        } catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
-            Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+		try {
+			Velocity.evaluate(ct, out, "JZ was here", tmpl);
+		} catch (MethodInvocationException | ResourceNotFoundException | ParseErrorException ex) {
+			Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
 
-        System.out.println(out);
+		System.out.println(out);
 
-        System.out.println("bind: " + ct.get("bind"));
+		System.out.println("bind: " + ct.get("bind"));
 
-    }
+	}
 
-    @Test
-    public void hello3() {
-        VelocityContext ct = new VelocityContext();
-        
-        TimestampArg min = new TimestampArg("1440433779");
-        TimestampArg max = new TimestampArg(null);
-        ResolutionArg res = new ResolutionArg("5m");
+	@Test
+	public void hello3() {
+		VelocityContext ct = new VelocityContext();
 
-        ct.put("minimum", min);
-        ct.put("maximum", max);
-        ct.put("domain", new StringArg("fred"));
-        ct.put("resolution", res);
-        ct.put("bind", new Bind());
+		TimestampArg min = new TimestampArg("1440433779");
+		TimestampArg max = new TimestampArg(null);
+		ResolutionArg res = new ResolutionArg("5m");
+
+		ct.put("minimum", min);
+		ct.put("maximum", max);
+		ct.put("domain", new StringArg("fred"));
+		ct.put("resolution", res);
+		ct.put("bind", new Bind());
 //        String tmpl = "select #replace ( $resolution '5m' 'd.true' 'd.false' ) from test.test where domain = lower( $domain.defaultTo('tw telecom - public')) ts > #bind ( $minimum.defaultCurrent ) and ts < #bind ( $maximum.defaultCurrent( '-3456' ) )";
-        String tmpl = "select '#replace ( $resolution '5m' 'd.true' 'd.false' )' " + 
-                "from test.test where domain = lower( #default ( $domain 'tw telecom - public' )) and " + 
-                "ts > #bind ( $minimum.defaultCurrent ) and ts < #bind ( $maximum.defaultCurrent( '-3456' ) )";
+		String tmpl = "select '#replace ( $resolution '5m' 'd.true' 'd.false' )' "
+			+ "from test.test where domain = lower( #default ( $domain 'tw telecom - public' )) and "
+			+ "ts > #bind ( $minimum.defaultCurrent ) and ts < #bind ( $maximum.defaultCurrent( '-3456' ) )";
 //        String tmpl = "select * from test.test where ts > #bind ( $minimum ) and ts < #bind ( #default ( $minimum $minimum ) )";
 //        String tmpl = "select #default ( $minimum $minimum  )";
 
-        StringWriter out = new StringWriter();
+		StringWriter out = new StringWriter();
 
-        try {
-            Velocity.evaluate(ct, out, " LOGGER ", tmpl);
-        } catch (Exception ex) {
-            Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+		try {
+			Velocity.evaluate(ct, out, " LOGGER ", tmpl);
+		} catch (Exception ex) {
+			Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
 
-        System.out.println(out);
+		System.out.println(out);
 
-        System.out.println("bind: " + ct.get("bind"));
+		System.out.println("bind: " + ct.get("bind"));
 
-    }
+	}
 
-    //@Test
-    public void hello2() throws Exception {
+	//@Test
+	public void hello2() throws Exception {
 
-        VelocityContext ct = new VelocityContext();
+		VelocityContext ct = new VelocityContext();
 
-        ct.put("test", new VTest());
-        ct.put("bind", new Bind());
+		ct.put("test", new VTest());
+		ct.put("bind", new Bind());
 
-        StringWriter out = new StringWriter();
+		StringWriter out = new StringWriter();
 
-        Template t = Velocity.getTemplate("test.vm");
+		Template t = Velocity.getTemplate("test.vm");
 
-        t.merge(ct, out);
-        System.out.println(out);
+		t.merge(ct, out);
+		System.out.println(out);
 
-        System.out.println("bind: " + ct.get("bind"));
+		System.out.println("bind: " + ct.get("bind"));
 
-    }
+	}
 
 }
