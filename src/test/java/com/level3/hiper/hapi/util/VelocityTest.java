@@ -8,12 +8,10 @@ package com.level3.hiper.hapi.util;
 import com.level3.hiper.hapi.velocity.input.ResolutionArg;
 import com.level3.hiper.hapi.velocity.input.StringArg;
 import com.level3.hiper.hapi.velocity.input.TimestampArg;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +29,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -140,8 +137,8 @@ public class VelocityTest {
     public void hello() {
         VelocityContext ct = new VelocityContext();
 
-        ct.put("test", new VTest());
-        ct.put("bind", new Bind());
+	    Object put = ct.put("test", new VTest());
+	    Object put1 = ct.put("bind", new Bind());
 
         String tmpl = "select * from test.test where name = #bind ( $test.getMessage('Test') )  and name != #bind ( $test.value )";
 
@@ -149,7 +146,7 @@ public class VelocityTest {
 
         try {
             Velocity.evaluate(ct, out, "JZ was here", tmpl);
-        } catch (Exception ex) {
+        } catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
             Logger.getLogger(VelocityTest.class.getName()).log(Level.SEVERE, null, ex);
         }
 
