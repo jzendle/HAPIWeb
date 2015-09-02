@@ -36,8 +36,10 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.json.JSONArray;
-import org.json.JSONException;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
+import org.json.simple.JSONArray;
 
 /**
  *
@@ -50,6 +52,7 @@ public class Servlet extends HttpServlet {
     private DataSource ds;
 
     private String dir = "/var/tmp";
+
 
     /*
      <resource-ref>
@@ -69,7 +72,7 @@ public class Servlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, SQLException, JSONException {
+            throws ServletException, IOException, SQLException {
         response.setContentType("application/json;charset=UTF-8");
 
         Properties p = new Properties();
@@ -88,12 +91,12 @@ public class Servlet extends HttpServlet {
         TimestampArg min = new TimestampArg(null);
         TimestampArg max = new TimestampArg(null);
         ResolutionArg res = new ResolutionArg("5m");
-        ResolutionArg interval = new ResolutionArg("5h");
+        ResolutionArg interval = new ResolutionArg("5m");
 
         ct.put("minimum", min);
         ct.put("maximum", max);
-        ct.put("domain", new StringArg(null));
-        ct.put("service", new StringArg("'19/HCFS/110374/TWCS'"));
+        ct.put("domain", new StringArg("tw telecom - public"));
+        ct.put("service", new StringArg("19/HCFS/110374/TWCS"));
         ct.put("resolution", res);
         ct.put("interval", interval);
 
@@ -108,7 +111,7 @@ public class Servlet extends HttpServlet {
 
         try {
             Velocity.evaluate(ct, out, " LOGGER ", tmpl);
-        } catch (Exception ex) {
+        } catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
             Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 

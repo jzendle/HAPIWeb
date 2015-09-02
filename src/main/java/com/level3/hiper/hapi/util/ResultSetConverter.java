@@ -5,9 +5,8 @@
  */
 package com.level3.hiper.hapi.util;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -16,8 +15,8 @@ import java.sql.ResultSetMetaData;
 public class ResultSetConverter {
 
     public static JSONArray convert(ResultSet rs)
-            throws SQLException, JSONException {
-        JSONArray json = new JSONArray();
+            throws SQLException {
+        JSONArray jsonArray = new JSONArray();
         ResultSetMetaData rsmd = rs.getMetaData();
 
         while (rs.next()) {
@@ -58,9 +57,9 @@ public class ResultSetConverter {
                 }
             }
 
-            json.put(obj);
+            jsonArray.add(obj);
         }
 
-        return json;
+        return jsonArray;
     }
 }

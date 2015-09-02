@@ -16,6 +16,6 @@ public class StringArg extends BaseArg {
     }
 
     public String defaultTo(String input) {
-        return "'" + (value == null ? input : value) + "'";
+        return (value == null ? input : value);
     }
 }

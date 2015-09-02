@@ -6,7 +6,6 @@
 package com.level3.hiper.hapi.util;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +20,8 @@ import java.util.Map;
 public class SectionFile {
 
     public static Map<String, List<String>> parse(String fileName) throws IOException {
-        Map map = new HashMap();
+        //Map<String, List<String>> map = new HashMap ();
+        Map <String, List<String>> map = new HashMap ();
 
         try (BufferedReader buff = new BufferedReader(new FileReader(fileName))) {
             String line;
