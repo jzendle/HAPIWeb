@@ -25,7 +25,7 @@ public class ResolutionArg extends BaseArg {
         
         
         public Integer getAsSeconds() { 
-            return 3000;
+            return 300;
         }
 
 }

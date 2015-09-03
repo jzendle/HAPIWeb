@@ -48,137 +48,146 @@ import org.json.simple.JSONArray;
 @WebServlet(name = "Servlet", urlPatterns = {"/api/*"})
 public class Servlet extends HttpServlet {
 
-    @Resource(name = "jdbc/TestDB")
-    private DataSource ds;
+	@Resource(name = "jdbc/TestDB")
+	private DataSource ds;
 
-    private String dir = "/var/tmp";
+	private String dir = "/var/tmp";
 
 
-    /*
-     <resource-ref>
-     <description>DB Connection</description>
-     <res-ref-name>jdbc/TestDB</res-ref-name>
-     <res-type>javax.sql.DataSource</res-type>
-     <res-auth>Container</res-auth>
-     </resource-ref>
-     */
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, SQLException {
-        response.setContentType("application/json;charset=UTF-8");
+	/*
+	 <resource-ref>
+	 <description>DB Connection</description>
+	 <res-ref-name>jdbc/TestDB</res-ref-name>
+	 <res-type>javax.sql.DataSource</res-type>
+	 <res-auth>Container</res-auth>
+	 </resource-ref>
+	 */
+	/**
+	 * Processes requests for both HTTP <code>GET</code> and
+	 * <code>POST</code> methods.
+	 *
+	 * @param request servlet request
+	 * @param response servlet response
+	 * @throws ServletException if a servlet-specific error occurs
+	 * @throws IOException if an I/O error occurs
+	 */
+	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException, SQLException {
+		response.setContentType("application/json;charset=UTF-8");
 
-        Properties p = new Properties();
-        String path = "/tmp";
-        p.setProperty("file.resource.loader.path", path);
-        Velocity.init(p);
+		Properties p = new Properties();
+		String path = "/tmp";
+		p.setProperty("file.resource.loader.path", path);
+		Velocity.init(p);
 
-        String source = path + request.getRequestURI() + ".conf";
-        Logger.getLogger(Servlet.class.getName()).log(Level.INFO, source);
+		String source = path + request.getRequestURI() + ".conf";
+		Logger.getLogger(Servlet.class.getName()).log(Level.INFO, source);
 
-        /*
-         ** mess with args TODO abstract this
-         */
-        VelocityContext ct = new VelocityContext();
+		/*
+		 ** mess with args TODO abstract this
+		 */
+		VelocityContext ct = new VelocityContext();
 
-        TimestampArg min = new TimestampArg(null);
-        TimestampArg max = new TimestampArg(null);
-        ResolutionArg res = new ResolutionArg("5m");
-        ResolutionArg interval = new ResolutionArg("5m");
+		TimestampArg min = new TimestampArg("1441218921");
+		TimestampArg max = new TimestampArg("1441222521");
+		ResolutionArg res = new ResolutionArg("5m");
+		ResolutionArg interval = new ResolutionArg("5m");
 
-        ct.put("minimum", min);
-        ct.put("maximum", max);
-        ct.put("domain", new StringArg("tw telecom - public"));
-        ct.put("service", new StringArg("19/HCFS/110374/TWCS"));
-        ct.put("resolution", res);
-        ct.put("interval", interval);
+		ct.put("minimum", min);
+		ct.put("maximum", max);
+		ct.put("domain", new StringArg("tw telecom - public"));
+		ct.put("service", new StringArg("19/HCFS/110374/TWCS"));
+		ct.put("resolution", res);
+		ct.put("interval", interval);
 
-        ArgBinder toBind = new ArgBinder();
-        ct.put("bind", toBind);
+		ArgBinder toBind = new ArgBinder();
+		ct.put("bind", toBind);
 
-        Map map = SectionFile.parse(source);
+		Map map = SectionFile.parse(source);
 
-        String tmpl = StringUtils.join((((List) map.get("read")).toArray()), '\n');
+		String tmpl = StringUtils.join((((List) map.get("read")).toArray()), '\n');
 
-        StringWriter out = new StringWriter();
+		StringWriter out = new StringWriter();
 
-        try {
-            Velocity.evaluate(ct, out, " LOGGER ", tmpl);
-        } catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+		try {
+			Velocity.evaluate(ct, out, " LOGGER ", tmpl);
+		} catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
+			Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+		}
 
-        System.out.println(out);
+		System.out.println(out);
 
-        System.out.println("bound variables: " + ct.get("bind"));
+		System.out.println("bound variables: " + ct.get("bind"));
 
-        Collection bindVals = toBind.getVals();
+		Collection bindVals = toBind.getVals();
 
-        // assertTrue(bindVals.size() == 2);
-        Connection conn = ds.getConnection();
-        PreparedStatement ps = conn.prepareStatement(out.toString());
+		// assertTrue(bindVals.size() == 2);
+		try (Connection conn = ds.getConnection()) {
 
-        ps = JDBC.populate(ps, bindVals);
+			try (PreparedStatement ps = conn.prepareStatement(out.toString())) {
 
-        try (ResultSet rs = ps.executeQuery()) {
-            JSONArray json = ResultSetConverter.convert(rs);
-            System.out.println("response: " + json);
-            response.getWriter().write(json.toString());
-        }
+				JDBC.populate(ps, bindVals);
 
-    }
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (Exception ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+				try (ResultSet rs = ps.executeQuery()) {
+					JSONArray json = ResultSetConverter.convert(rs);
+					//		System.out.println("response: " + json);
+					response.getWriter().write(json.toString());
+					rs.close();
+				}
+				ps.close();
+			}
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (Exception ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+			conn.close();
+		}
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+
+	/**
+	 * Handles the HTTP <code>GET</code> method.
+	 *
+	 * @param request servlet request
+	 * @param response servlet response
+	 * @throws ServletException if a servlet-specific error occurs
+	 * @throws IOException if an I/O error occurs
+	 */
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException {
+		try {
+			processRequest(request, response);
+		} catch (Exception ex) {
+			Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	/**
+	 * Handles the HTTP <code>POST</code> method.
+	 *
+	 * @param request servlet request
+	 * @param response servlet response
+	 * @throws ServletException if a servlet-specific error occurs
+	 * @throws IOException if an I/O error occurs
+	 */
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException {
+		try {
+			processRequest(request, response);
+		} catch (Exception ex) {
+			Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	/**
+	 * Returns a short description of the servlet.
+	 *
+	 * @return a String containing servlet description
+	 */
+	@Override
+	public String getServletInfo() {
+		return "Short description";
+	}// </editor-fold>
 
 }
