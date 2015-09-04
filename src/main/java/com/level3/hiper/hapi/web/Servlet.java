@@ -119,7 +119,7 @@ public class Servlet extends HttpServlet {
 
 		System.out.println("bound variables: " + ct.get("bind"));
 
-		Collection bindVals = toBind.getVals();
+		Collection bindVals = toBind.getValues();
 
 		// assertTrue(bindVals.size() == 2);
 		try (Connection conn = ds.getConnection()) {
@@ -143,7 +143,6 @@ public class Servlet extends HttpServlet {
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-
 	/**
 	 * Handles the HTTP <code>GET</code> method.
 	 *

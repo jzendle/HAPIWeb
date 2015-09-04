@@ -284,7 +284,7 @@ public class VelocityDbTest {
 
 		System.out.println("bound variables: " + ct.get("bind"));
 
-		Collection bindVals = toBind.getVals();
+		Collection bindVals = toBind.getValues();
 
         // assertTrue(bindVals.size() == 2);
 		PreparedStatement ps = connection.prepareStatement(out.toString());

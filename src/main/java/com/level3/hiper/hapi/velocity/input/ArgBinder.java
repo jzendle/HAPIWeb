@@ -16,7 +16,7 @@ public class ArgBinder {
 
     List<String> vals = new ArrayList();
 
-    public List<String> getVals() {
+    public List<String> getValues() {
         return vals;
     }
 
