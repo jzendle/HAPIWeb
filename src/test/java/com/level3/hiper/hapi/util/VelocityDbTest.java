@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +39,7 @@ public class VelocityDbTest {
 	public VelocityDbTest() {
 	}
 
-	@BeforeClass
+	//@BeforeClass
 	public static void setUpClass() throws ClassNotFoundException, SQLException {
 
 		String className = "com.vertica.jdbc.Driver";
@@ -73,7 +74,7 @@ public class VelocityDbTest {
 	//
 	// @Test
 	// public void hello() {}
-	@Test
+	//@Test
 	public void hello3() throws SQLException {
 		VelocityContext ct = new VelocityContext();
 
@@ -292,13 +293,13 @@ public class VelocityDbTest {
 		ps = JDBC.populate(ps, bindVals);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			JSONArray json = ResultSetConverter.convert(rs);
+			List json = ResultSetConverter.convert(rs);
 			System.out.println("response: " + json);
 		}
 
 	}
 	@Test
-	public void hello4() throws SQLException {
+	public void hello4() {
 
 	}
 

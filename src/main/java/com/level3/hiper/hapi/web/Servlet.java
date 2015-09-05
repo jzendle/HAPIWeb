@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,6 +41,8 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 /**
  *
@@ -121,7 +124,7 @@ public class Servlet extends HttpServlet {
 
 		Collection bindVals = toBind.getValues();
 
-		// assertTrue(bindVals.size() == 2);
+      Response rsp = new Response();
 		try (Connection conn = ds.getConnection()) {
 
 			try (PreparedStatement ps = conn.prepareStatement(out.toString())) {
@@ -129,15 +132,19 @@ public class Servlet extends HttpServlet {
 				JDBC.populate(ps, bindVals);
 
 				try (ResultSet rs = ps.executeQuery()) {
-					JSONArray json = ResultSetConverter.convert(rs);
-					//		System.out.println("response: " + json);
-					response.getWriter().write(json.toString());
-					rs.close();
+					List data = ResultSetConverter.convert(rs);
+					Map header = rsp.makeHeader();
+					Map error = rsp.makeError();
+
+               header.put("error",error);
+               header.put("data", data);
+               
+               // JSONValue.toJSONString() respects ordering provided
+               // by linkedhashmap implementations from above
+					response.getWriter().write(JSONValue.toJSONString( header ));
 				}
-				ps.close();
 			}
 
-			conn.close();
 		}
 
 	}
