@@ -15,18 +15,30 @@ import java.util.Set;
  */
 public class ResolutionArg extends BaseArg {
 
-        private static Set<String> vals = new HashSet<String>(Arrays.asList("5m", "1h", "8h", "24h"));
+   private static Set<String> vals = new HashSet<String>(Arrays.asList("5m", "1h", "8h", "24h"));
+   Integer seconds;
 
-        public Boolean isValid() { return value == null ? false : vals.contains(value);}
-        
-        public ResolutionArg(String in) {
-            super(in);
-        }
-        
-        
-        public Integer getAsSeconds() { 
-            return 300;
-        }
+   @Override
+   public Boolean validate() {
+
+      if (!vals.contains(value)) {
+         return false;
+      }
+
+      int idx = value.length() - 1;
+      char multiplier = value.charAt(idx);
+
+      int numeric = Integer.parseInt(value.substring(0, idx));
+      seconds = numeric * (multiplier == 'h' ? 3600 : 60);
+      return true;
+   }
+
+   public ResolutionArg(String in) {
+      super(in);
+   }
+
+   public Integer getAsSeconds() {
+      return seconds;
+   }
 
 }
-

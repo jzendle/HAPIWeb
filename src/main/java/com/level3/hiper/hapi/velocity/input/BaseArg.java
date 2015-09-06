@@ -20,4 +20,8 @@ public class BaseArg {
     public String toString() {
         return value;
     }
+    
+    public Boolean validate() {
+       return true;
+    }
 }

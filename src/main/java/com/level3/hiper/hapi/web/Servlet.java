@@ -8,11 +8,11 @@ package com.level3.hiper.hapi.web;
 import com.level3.hiper.hapi.util.JDBC;
 import com.level3.hiper.hapi.util.ResultSetConverter;
 import com.level3.hiper.hapi.util.SectionFile;
+import com.level3.hiper.hapi.velocity.VelocityContext;
 import com.level3.hiper.hapi.velocity.input.ArgBinder;
 import com.level3.hiper.hapi.velocity.input.ResolutionArg;
 import com.level3.hiper.hapi.velocity.input.StringArg;
 import com.level3.hiper.hapi.velocity.input.TimestampArg;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -20,11 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -35,13 +33,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 /**
@@ -103,9 +98,6 @@ public class Servlet extends HttpServlet {
 		ct.put("resolution", res);
 		ct.put("interval", interval);
 
-		ArgBinder toBind = new ArgBinder();
-		ct.put("bind", toBind);
-
 		Map map = SectionFile.parse(source);
 
 		String tmpl = StringUtils.join((((List) map.get("read")).toArray()), '\n');
@@ -122,7 +114,7 @@ public class Servlet extends HttpServlet {
 
 		System.out.println("bound variables: " + ct.get("bind"));
 
-		Collection bindVals = toBind.getValues();
+		Collection bindVals = ct.getBoundValues();
 
       Response rsp = new Response();
 		try (Connection conn = ds.getConnection()) {
