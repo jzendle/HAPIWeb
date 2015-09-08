@@ -11,17 +11,29 @@ package com.level3.hiper.hapi.velocity.input;
  */
 public class BaseArg {
 
-    protected String value;
-    
-    public BaseArg(String input) {
-        value=input;
-    }
-    @Override
-    public String toString() {
-        return value;
-    }
-    
-    public Boolean validate() {
-       return true;
-    }
+  protected String value="";
+
+  public BaseArg(String input) {
+    value = input;
+  }
+
+	public BaseArg() {
+	}
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    return value;
+  }
+
+  public Boolean validate() {
+    return true;
+  }
 }

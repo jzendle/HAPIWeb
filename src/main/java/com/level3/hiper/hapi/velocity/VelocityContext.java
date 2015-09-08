@@ -19,7 +19,7 @@ public class VelocityContext extends org.apache.velocity.VelocityContext {
   public VelocityContext() {
     super();
     this.put("bind", binder); // "bind" is referenced in the #bind velocity macro defined in the 'system library' 
-    
+    this.put("__util__", com.level3.hiper.hapi.velocity.input.Util.class);
   }
 
   public Collection<String> getBoundValues() {

@@ -17,3 +17,22 @@ $defaultValue
 
 #macro(bind $bindVar)
 #if( $bind.addValue($bindVar.toString()))#end ? #end
+
+#macro(bind2 $bindVar $deflt $type)
+#if( !$type )
+    #set( $type = "string")
+#end
+
+#if( !$bindVar ) $bindVar missing from context
+  #if( $__util__.illegalArgumentException( "$bindVar" )) #end
+#end
+#if( $bindVar == "" )
+  #if ( $type == "time" )
+    #set ($bindVar.value = $__util__.adjustedTimeMillis($deflt))
+  #else
+    #set ($bindVar.value = $deflt)
+  #end
+#end
+$bind.addValue($bindVar.toString())
+$bindVar
+#end

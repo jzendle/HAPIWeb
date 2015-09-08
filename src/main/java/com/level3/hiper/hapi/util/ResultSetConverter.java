@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class ResultSetConverter {
 
-   public static List convert(ResultSet rs)
+   public static List<Map<String,Object>> convert(ResultSet rs)
            throws SQLException {
       List array = new ArrayList();
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -23,7 +23,7 @@ public class ResultSetConverter {
       while (rs.next()) {
          int numColumns = rsmd.getColumnCount();
          // keep entries in same order as from db with linked struct
-         Map columns = new LinkedHashMap();
+         Map<String,Object> columns = new LinkedHashMap();
 
          for (int i = 1; i < numColumns + 1; i++) {
             String column_name = rsmd.getColumnName(i);
