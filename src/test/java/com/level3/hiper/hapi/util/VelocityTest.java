@@ -150,13 +150,20 @@ public class VelocityTest {
 	public void hello2() throws Exception {
 
 			velocityContext = new VelocityContext();
-		velocityContext.put("minimum", new BaseArg());
+		//velocityContext.put("minimum", new BaseArg("45454545"));
+		velocityContext.put("minimum", "45454545");
+		velocityContext.put("resolution", "7h");
     //System.out.println("context: " + velocityContext.get("txx"));
 
 		StringWriter out = new StringWriter();
 		//String tmpl = "select * from test where a = #bind2 ( $txx 'string' 'balls') ";
 		//String tmpl = "select * from test where a = #bind2 ( $minimum '-4567' 'time' ) ";
-		String tmpl = "select * from test where a = #bind2 ( $minimum '-4567' 'time' ) ";
+		String tmpl = "select * from test where a = #bind_default ( $maximum '-4567' 'time' ) and a = #bind_default ( $minimum '-4567' 'time' ) " + 
+            //" and b = #bind ( $minimum ) and b = #bind ( $maximum )" +
+            " and b = #bind ( $minimum ) " +
+            " and b = '#transform ( $resolution 'duration' ) seconds'"
+            
+            ;
 		try {
 			Velocity.evaluate(velocityContext, out, " LOGGER ", tmpl);
 		} catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
@@ -164,7 +171,7 @@ public class VelocityTest {
 		}
 		System.out.println(out);
 
-		System.out.println("bind: " + velocityContext.get("bind"));
+		System.out.println("bind: " + velocityContext.getBoundValues());
 	}
 
 }

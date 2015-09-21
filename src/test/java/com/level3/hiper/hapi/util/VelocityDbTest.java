@@ -5,10 +5,7 @@
  */
 package com.level3.hiper.hapi.util;
 
-import com.level3.hiper.hapi.velocity.input.ArgBinder;
-import com.level3.hiper.hapi.velocity.input.ResolutionArg;
-import com.level3.hiper.hapi.velocity.input.StringArg;
-import com.level3.hiper.hapi.velocity.input.TimestampArg;
+import com.level3.hiper.hapi.velocity.VelocityContext;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,9 +16,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.json.simple.JSONArray;
+import org.apache.velocity.exception.MethodInvocationException;
+import org.apache.velocity.exception.ParseErrorException;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -39,26 +37,31 @@ public class VelocityDbTest {
 	public VelocityDbTest() {
 	}
 
-	//@BeforeClass
-	public static void setUpClass() throws ClassNotFoundException, SQLException {
+  @BeforeClass
+  public static void setUpClass() throws ClassNotFoundException, SQLException {
 
-		String className = "com.vertica.jdbc.Driver";
+    String className = "com.vertica.jdbc.Driver";
 
-        String url = "jdbc:vertica://dbavertdalplp61.twtelecom.com:5433/NPMP";
+    String url = "jdbc:vertica://dbavertdalplp61.twtelecom.com:5433/NPMP";
 //		String url = "jdbc:vertica://invertidcplp301.twtelecom.com:5433/NPMP";
-		String user = "npm_locator";
-		String password = "l0cateme";
-		connection = JDBC.getConnection(className, url, user, password);
+    String user = "npm_locator";
+    String password = "l0cateme";
+    connection = JDBC.getConnection(className, url, user, password);
 
-		Properties p = new Properties();
-		String path = "./target/test-classes";
-		p.setProperty("file.resource.loader.path", path);
+    Properties p = new Properties();
+    String path = "./target/test-classes";
+    p.setProperty("file.resource.loader.path", path);
 		Velocity.init(p);
 
 	}
 
 	@AfterClass
 	public static void tearDownClass() {
+    try {
+      connection.close();
+    } catch (SQLException ex) {
+      Logger.getLogger(VelocityDbTest.class.getName()).log(Level.SEVERE, null, ex);
+    }
 	}
 
 	@Before
@@ -74,24 +77,13 @@ public class VelocityDbTest {
 	//
 	// @Test
 	// public void hello() {}
-	//@Test
+	@Test
 	public void hello3() throws SQLException {
 		VelocityContext ct = new VelocityContext();
 
-		TimestampArg min = new TimestampArg("1441218921");
-		TimestampArg max = new TimestampArg("1441222521");
-		ResolutionArg res = new ResolutionArg("5m");
-		ResolutionArg interval = new ResolutionArg("5m");
-
-		ct.put("minimum", min);
-		ct.put("maximum", max);
-		ct.put("domain", new StringArg("tw telecom - public"));
-		ct.put("service", new StringArg("19/HCFS/110374/TWCS"));
-		ct.put("resolution", res);
-		ct.put("interval", interval);
-
-		ArgBinder toBind = new ArgBinder();
-		ct.put("bind", toBind);
+		ct.put("service", "19/HCFS/110374/TWCS");
+		ct.put("resolution", "5m");
+		ct.put("interval", "5m");
 
 		String tmpl = "SELECT /*+label(jz)*/\n"
 			+ "	d.stamp    AS stamp,\n"
@@ -116,11 +108,11 @@ public class VelocityDbTest {
 			+ "	      0                             AS rx\n"
 			+ "	   FROM\n"
 			+ "	   (\n"
-			+ "	      SELECT TO_TIMESTAMP_TZ( #bind ( $minimum.defaultCurrent('-86400') ) ) AT TIMEZONE 'UTC'  AS tstamp\n"
+			+ "	      SELECT TO_TIMESTAMP_TZ( #bind_default ( $minimum '-86400' 'time') )  AT TIMEZONE 'UTC'  AS tstamp\n"
 			+ "	      UNION\n"
-			+ "	      SELECT TO_TIMESTAMP_TZ( #bind ( $maximum.defaultCurrent )) AT TIMEZONE 'UTC'       AS tstamp\n"
+			+ "	      SELECT TO_TIMESTAMP_TZ( #bind_default ( $maximum '0' 'time' )) AT TIMEZONE 'UTC'       AS tstamp\n"
 			+ "	   ) as expected_hours\n"
-			+ "	   TIMESERIES ts AS '$interval.asSeconds seconds' OVER (ORDER BY tstamp)\n"
+			+ "	   TIMESERIES ts AS '#transform ( $interval ) seconds' OVER (ORDER BY tstamp)\n"
 			+ "	) \n"
 			+ "	UNION\n"
 			+ "	(\n"
@@ -132,8 +124,8 @@ public class VelocityDbTest {
 			+ "		(\n"
 			+ "			SELECT\n"
 			+ "				CEILING(\n"
-			+ "					m.stamp/ $interval.asSeconds\n"
-			+ "				) * $interval.asSeconds\n"
+			+ "					m.stamp/ #transform ( $interval )\n"
+			+ "				) * #transform ( $interval ) \n"
 			+ "	                                 AS stamp,\n"
 			+ "				m.bit_tx/n.packet_tx    AS tx,\n"
 			+ "				m.bit_rx/n.packet_rx    AS rx\n"
@@ -165,7 +157,7 @@ public class VelocityDbTest {
 			+ "						'Bits / Second - RX'\n"
 			+ "					)\n"
 			+ "				AND\n"
-			+ "					c.domain              = lower(  #bind ( $domain.defaultTo( 'tw telecom - public') ) )\n"
+			+ "					c.domain              = lower(  #bind_default ( $domain 'tw telecom - public') ) \n"
 			+ "				AND\n"
 			+ "					c.circuit_identifier  = upper( #bind ( $service ) )\n"
 			+ "				AND\n"
@@ -177,9 +169,9 @@ public class VelocityDbTest {
 			+ "				AND\n"
 			+ "					c.max_stamp                 >= d.stamp\n"
 			+ "				AND\n"
-			+ "					d.stamp                     >=  #bind ( $minimum.defaultCurrent('-86400'))\n"
+			+ "					d.stamp                     >=  #bind_default ( $minimum '-86400' 'time')\n"
 			+ "				AND\n"
-			+ "					d.stamp                     <= #bind ( $maximum.defaultCurrent )\n"
+			+ "					d.stamp                     <= #bind_default ( $maximum '0' 'time' )\n"
 			+ "				GROUP BY\n"
 			+ "					d.snmp_instance, d.stamp\n"
 			+ "				ORDER BY\n"
@@ -218,7 +210,7 @@ public class VelocityDbTest {
 			+ "								'Broadcast Packets / Second - RX'\n"
 			+ "							)\n"
 			+ "						AND\n"
-			+ "							c.domain              = lower( #bind ( $domain.defaultTo( 'tw telecom - public') ) )\n"
+			+ "							c.domain              = lower( #bind_default ( $domain 'tw telecom - public' 'string') )\n"
 			+ "						AND\n"
 			+ "							c.circuit_identifier  = upper( #bind ( $service ) )\n"
 			+ "						AND\n"
@@ -226,9 +218,9 @@ public class VelocityDbTest {
 			+ "						AND\n"
 			+ "							c.snmp_instance              = d.snmp_instance\n"
 			+ "						AND\n"
-			+ "							d.stamp                     >= #bind ( $minimum.defaultCurrent('-86400'))\n"
+			+ "							d.stamp                     >= #bind_default ( $minimum '-86400' 'time')\n"
 			+ "						AND\n"
-			+ "							d.stamp                     <= #bind ( $maximum.defaultCurrent )\n"
+			+ "							d.stamp                     <= #bind_default ( $maximum '0' 'time' )\n"
 			+ "						AND\n"
 			+ "							c.min_stamp                 <= d.stamp\n"
 			+ "						AND\n"
@@ -261,9 +253,9 @@ public class VelocityDbTest {
 			+ "		stamp\n"
 			+ ") d\n"
 			+ "WHERE\n"
-			+ "	d.stamp                     >= #bind ( $minimum.defaultCurrent('-86400'))\n"
+			+ "	d.stamp                     >= #bind_default ( $minimum '-86400' 'time' ) \n\n"
 			+ "AND\n"
-			+ "	d.stamp                     <= #bind ( $maximum.defaultCurrent )\n"
+			+ "	d.stamp                     <= #bind_default( $maximum '0' 'time' ) \n"
 			+ "GROUP BY \n"
 			+ "	d.stamp\n"
 			+ "ORDER BY\n"
@@ -277,15 +269,15 @@ public class VelocityDbTest {
 
 		try {
 			Velocity.evaluate(ct, out, " LOGGER ", tmpl);
-		} catch (Exception ex) {
+		} catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
 			Logger.getLogger(VelocityDbTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
 		System.out.println(out);
 
-		System.out.println("bound variables: " + ct.get("bind"));
+		System.out.println("bound variables: " + ct.getBoundValues());
 
-		Collection bindVals = toBind.getValues();
+		Collection bindVals = ct.getBoundValues();
 
         // assertTrue(bindVals.size() == 2);
 		PreparedStatement ps = connection.prepareStatement(out.toString());
@@ -293,7 +285,7 @@ public class VelocityDbTest {
 		ps = JDBC.populate(ps, bindVals);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			List json = ResultSetConverter.convert(rs);
+			List json = new ResultSetConverter().convert(rs);
 			System.out.println("response: " + json);
 		}
 

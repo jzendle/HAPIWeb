@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class ResultSetConverter {
 
-   public static List<Map<String,Object>> convert(ResultSet rs)
+   public List<Map<String,Object>> convert(ResultSet rs)
            throws SQLException {
       List array = new ArrayList();
       ResultSetMetaData rsmd = rs.getMetaData();
