@@ -36,6 +36,7 @@ public class TimestampArg extends BaseArg {
         parse(input);
     }
 
+    @Override
     public String getValue() {
         return longValue.toString();
     }

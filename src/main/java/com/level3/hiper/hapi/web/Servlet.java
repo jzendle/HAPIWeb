@@ -20,9 +20,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -86,37 +88,38 @@ public class Servlet extends HttpServlet {
 		 */
 		VelocityContext ct = new VelocityContext();
 
-		TimestampArg min = new TimestampArg("1441218921");
-		TimestampArg max = new TimestampArg("1441222521");
-		ResolutionArg res = new ResolutionArg("5m");
-		ResolutionArg interval = new ResolutionArg("5m");
+		Map parms = request.getParameterMap();
+		Set keys = parms.keySet();
+		for (Iterator iterator = keys.iterator(); iterator.hasNext();) {
+			String next = (String) iterator.next();
+			ct.put(next, ((String[]) parms.get(next))[0]);
+		}
 
-		ct.put("minimum", min);
-		ct.put("maximum", max);
-		ct.put("domain", new StringArg("tw telecom - public"));
-		ct.put("service", new StringArg("19/HCFS/110374/TWCS"));
-		ct.put("resolution", res);
-		ct.put("interval", interval);
-
+		/* 
+		 ct.put(parms);
+		 ct.put("minimum","1441218921" );
+		 ct.put("maximum", "1441222521");
+		 ct.put("domain", "tw telecom - public");
+		 ct.put("service", "19/HCFS/110374/TWCS");
+		 ct.put("resolution", "5m");
+		 ct.put("interval", "5m");
+		 */
 		Map map = SectionFile.parse(source);
 
 		String tmpl = StringUtils.join((((List) map.get("read")).toArray()), '\n');
 
 		StringWriter out = new StringWriter();
 
-		try {
-			Velocity.evaluate(ct, out, " LOGGER ", tmpl);
-		} catch (ParseErrorException | MethodInvocationException | ResourceNotFoundException ex) {
-			Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		Velocity.evaluate(ct, out, " LOGGER ", tmpl);
 
 		System.out.println(out);
 
-		System.out.println("bound variables: " + ct.get("bind"));
+		System.out.println("bound variables: " + ct.getBoundValues());
 
 		Collection bindVals = ct.getBoundValues();
 
-      Response rsp = new Response();
+		Response rsp = new Response();
+		ResultSetConverter cvtr = new ResultSetConverter();
 		try (Connection conn = ds.getConnection()) {
 
 			try (PreparedStatement ps = conn.prepareStatement(out.toString())) {
@@ -124,16 +127,16 @@ public class Servlet extends HttpServlet {
 				JDBC.populate(ps, bindVals);
 
 				try (ResultSet rs = ps.executeQuery()) {
-					List data = ResultSetConverter.convert(rs);
+					List data = cvtr.convert(rs);
 					Map header = rsp.makeHeader();
 					Map error = rsp.makeError();
 
-               header.put("error",error);
-               header.put("data", data);
-               
-               // JSONValue.toJSONString() respects ordering provided
-               // by linkedhashmap implementations from above
-					response.getWriter().write(JSONValue.toJSONString( header ));
+					header.put("error", error);
+					header.put("data", data);
+
+					// JSONValue.toJSONString() respects ordering provided
+					// by linkedhashmap implementations from above
+					response.getWriter().write(JSONValue.toJSONString(header));
 				}
 			}
 

@@ -57,17 +57,28 @@ public class Response {
       return host;
    }
 
-   public Map<String,String> makeHeader() {
-      Map <String,String> map = new LinkedHashMap();
+   public Map<String,Object> makeHeader() {
+      Map <String,Object> map = new LinkedHashMap();
       map.put("identifier", getIdentifier());
       map.put("hostname", getHostname());
       map.put("version", getVersion());
       map.put("owner", getOwner());
       return map;
    }
-   public Map<String,String> makeError() {
-      Map <String,String> map = new LinkedHashMap();
-      map.put("code", "success");
+
+/*
+  "error": {
+     "code": 0,
+     "message": "SUCCESS",
+     "detail": null
+  }, 
+   */
+
+   public Map<String,Object> makeError() {
+      Map <String,Object> map = new LinkedHashMap();
+      map.put("code", 0);
+      map.put("message", "SUCCESS");
+      map.put("detail", null);
       return map;
    }
 

@@ -14,6 +14,44 @@ $defaultValue
 #end
 #end 
 
+#*
+  bind variable with no defaults - if bind variable is missing from context
+  an exception is thrown and template processing stops
+*#
 
 #macro(bind $bindVar)
-#if( $bind.addValue($bindVar.toString()))#end ? #end
+#if( !$bindVar ) $bindVar missing from context
+  $__util__.illegalArgumentException( "missing mandatory value: $bindVar" )
+  #stop
+#end
+#if( $__bind__.addValue($bindVar))#end ? #end
+
+#*
+  bind variable with default - if bind variable is missing from context
+  it is populated with the default value.
+  Type is passed in to determine special processing
+*#
+
+#macro(bind_default $bindVar $deflt $type )
+#if( !$type )
+  #set( $type = "string")
+#end
+#if( !$bindVar || $bindVar == "" )
+ #if ( $type == "time" )
+  #set ($bindVar = $__util__.adjustedTimeMillis($deflt))
+ #else
+  #set ($bindVar = $deflt)
+ #end
+#end
+#if ( $__bind__.addValue($bindVar))#end ? #end
+
+#macro(transform $bindVar $fxn)
+#if( !$bindVar )
+ $__util__.illegalArgumentException( "missing mandatory value: $bindVar" )
+ #stop 
+#end
+#if( !$fxn )
+ #set( $fxn = "resolution")
+#end
+#if ( $fxn == "resolution" )$__util__.transformResolution($bindVar)#elseif ( $fxn == "duration" )$__util__.transformDuration($bindVar)#end
+#end
