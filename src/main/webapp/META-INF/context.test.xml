@@ -7,8 +7,8 @@
     password="l0cateme"                                                     
     factory="org.apache.naming.factory.BeanFactory"
     type="com.mchange.v2.c3p0.ComboPooledDataSource"
-    maxPoolSize="50"   
-    minPoolSize="15"
+    maxPoolSize="10"   
+    minPoolSize="3"
     acquireIncrement="3"
     acquireRetryAttempts = "0"
     acquireRetryDelay = "3000"
@@ -24,3 +24,4 @@
     />
 </Context>
 <!--Resource auth="Container" driverClassName="com.vertica.jdbc.Driver" factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" initialSize="1" jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer" jmxEnabled="true" logAbandoned="true" maxActive="2" maxWait="10000" minEvictableIdleTimeMillis="1" minIdle="1" name="jdbc/TestDB" password="l0cateme" removeAbandoned="true" removeAbandonedTimeout="1" testOnBorrow="true" testOnReturn="false" testWhileIdle="true" timeBetweenEvictionRunsMillis="1" type="javax.sql.DataSource" url="jdbc:vertica://invertidcplp301.twtelecom.com:5433/NPMP" username="npm_locator" validationInterval="30000" validationQuery="SELECT 1"/-->
+  <!--Resource auth="Container" driverClassName="com.vertica.jdbc.Driver" factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" initialSize="1" jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;             org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer" jmxEnabled="true" logAbandoned="true" maxActive="2" maxWait="10000" minEvictableIdleTimeMillis="30000" minIdle="1" name="jdbc/TestDB" password="l0cateme" removeAbandoned="true" removeAbandonedTimeout="60" testOnBorrow="true" testOnReturn="false" testWhileIdle="true" timeBetweenEvictionRunsMillis="30000" type="javax.sql.DataSource" url="jdbc:vertica://invertidcplp301.twtelecom.com:5433/NPMP" username="npm_locator" validationInterval="30000" validationQuery="SELECT 1"/-->
